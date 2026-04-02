@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import type { Task, TaskProgressPayload } from '../types';
-import * as api from '../lib/tauri';
+import { create } from "zustand";
+import type { Task, TaskProgressPayload } from "../types";
+import * as api from "../lib/tauri";
 
 interface TaskStore {
   tasks: Task[];
@@ -40,10 +40,11 @@ export const useTaskStore = create<TaskStore>((set) => ({
               posts_completed: payload.posts_completed,
               total_estimated_cost: payload.cost_so_far,
             }
-          : t
+          : t,
       ),
     }));
   },
 
-  removeTask: (id) => set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) })),
+  removeTask: (id) =>
+    set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) })),
 }));

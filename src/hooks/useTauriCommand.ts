@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 export function useTauriCommand<T, A extends unknown[]>(
-  fn: (...args: A) => Promise<T>
+  fn: (...args: A) => Promise<T>,
 ) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,7 @@ export function useTauriCommand<T, A extends unknown[]>(
         setLoading(false);
       }
     },
-    [fn]
+    [fn],
   );
 
   return { execute, loading, error, data };

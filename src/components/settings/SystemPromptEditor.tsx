@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useSettingsStore } from '../../stores/settingsStore';
-import { Button } from '../ui/Button';
-import { useToast } from '../ui/Toast';
+import { useEffect, useState } from "react";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { Button } from "../ui/Button";
+import { useToast } from "../ui/Toast";
 
 const DEFAULT_PROMPT = `You are an expert content writer. Write comprehensive, engaging, and SEO-optimized WordPress blog posts. 
 Follow these guidelines:
@@ -13,7 +13,7 @@ Follow these guidelines:
 
 export function SystemPromptEditor() {
   const { settings, saveSettings } = useSettingsStore();
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState("");
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
@@ -27,9 +27,9 @@ export function SystemPromptEditor() {
     setSaving(true);
     try {
       await saveSettings({ system_prompt: prompt.trim() });
-      toast('System prompt saved', 'success');
+      toast("System prompt saved", "success");
     } catch (e) {
-      toast(`Save failed: ${e}`, 'error');
+      toast(`Save failed: ${e}`, "error");
     } finally {
       setSaving(false);
     }
@@ -39,18 +39,21 @@ export function SystemPromptEditor() {
     setPrompt(DEFAULT_PROMPT);
     try {
       await saveSettings({ system_prompt: DEFAULT_PROMPT });
-      toast('Reset to default', 'success');
+      toast("Reset to default", "success");
     } catch (e) {
-      toast(`Failed: ${e}`, 'error');
+      toast(`Failed: ${e}`, "error");
     }
   };
 
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-sm font-semibold text-neutral-300 mb-1">Default System Prompt</h3>
+        <h3 className="text-sm font-semibold text-neutral-300 mb-1">
+          Default System Prompt
+        </h3>
         <p className="text-xs text-neutral-500 mb-3">
-          This is sent to the AI for every task unless overridden per-task. Instructs the model on tone, format, and style.
+          This is sent to the AI for every task unless overridden per-task.
+          Instructs the model on tone, format, and style.
         </p>
       </div>
 

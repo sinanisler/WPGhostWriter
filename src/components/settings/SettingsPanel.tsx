@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { ApiSettings } from './ApiSettings';
-import { ModelSelector } from './ModelSelector';
-import { SystemPromptEditor } from './SystemPromptEditor';
+import { useState } from "react";
+import { ApiSettings } from "./ApiSettings";
+import { ModelSelector } from "./ModelSelector";
+import { SystemPromptEditor } from "./SystemPromptEditor";
 
-const TABS = ['API', 'Default Model', 'System Prompt'] as const;
-type Tab = typeof TABS[number];
+const TABS = ["API", "Default Model", "System Prompt"] as const;
+type Tab = (typeof TABS)[number];
 
 export function SettingsPanel() {
-  const [tab, setTab] = useState<Tab>('API');
+  const [tab, setTab] = useState<Tab>("API");
 
   return (
     <div className="space-y-5">
@@ -18,8 +18,8 @@ export function SettingsPanel() {
             key={t}
             className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
               tab === t
-                ? 'bg-neutral-800 text-neutral-100'
-                : 'text-neutral-500 hover:text-neutral-300'
+                ? "bg-neutral-800 text-neutral-100"
+                : "text-neutral-500 hover:text-neutral-300"
             }`}
             onClick={() => setTab(t)}
           >
@@ -30,9 +30,9 @@ export function SettingsPanel() {
 
       {/* Panel */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
-        {tab === 'API' && <ApiSettings />}
-        {tab === 'Default Model' && <ModelSelector />}
-        {tab === 'System Prompt' && <SystemPromptEditor />}
+        {tab === "API" && <ApiSettings />}
+        {tab === "Default Model" && <ModelSelector />}
+        {tab === "System Prompt" && <SystemPromptEditor />}
       </div>
     </div>
   );

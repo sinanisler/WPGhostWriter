@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import type { Site } from '../types';
-import * as api from '../lib/tauri';
+import { create } from "zustand";
+import type { Site } from "../types";
+import * as api from "../lib/tauri";
 
 interface SiteStore {
   sites: Site[];
@@ -28,7 +28,10 @@ export const useSiteStore = create<SiteStore>((set) => ({
   addSite: (site) => set((s) => ({ sites: [...s.sites, site] })),
 
   updateSite: (site) =>
-    set((s) => ({ sites: s.sites.map((s2) => (s2.id === site.id ? site : s2)) })),
+    set((s) => ({
+      sites: s.sites.map((s2) => (s2.id === site.id ? site : s2)),
+    })),
 
-  removeSite: (id) => set((s) => ({ sites: s.sites.filter((s2) => s2.id !== id) })),
+  removeSite: (id) =>
+    set((s) => ({ sites: s.sites.filter((s2) => s2.id !== id) })),
 }));

@@ -1,11 +1,11 @@
-import { Routes, Route } from 'react-router-dom';
-import { Sidebar } from './Sidebar';
-import { Dashboard } from '../dashboard/Dashboard';
-import { TaskList } from '../tasks/TaskList';
-import { SiteManager } from '../sites/SiteManager';
-import { UsageDashboard } from '../usage/UsageDashboard';
-import { SettingsPanel } from '../settings/SettingsPanel';
-import { useTaskEvents } from '../../hooks/useTaskEvents';
+import { Routes, Route } from "react-router-dom";
+import { Sidebar } from "./Sidebar";
+import { Dashboard } from "../dashboard/Dashboard";
+import { TaskList } from "../tasks/TaskList";
+import { SiteManager } from "../sites/SiteManager";
+import { UsageDashboard } from "../usage/UsageDashboard";
+import { SettingsPanel } from "../settings/SettingsPanel";
+import { useTaskEvents } from "../../hooks/useTaskEvents";
 
 export function AppShell() {
   useTaskEvents();

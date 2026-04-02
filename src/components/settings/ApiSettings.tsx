@@ -1,21 +1,24 @@
-import { useEffect, useState } from 'react';
-import { useSettingsStore } from '../../stores/settingsStore';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { useToast } from '../ui/Toast';
-import * as api from '../../lib/tauri';
+import { useEffect, useState } from "react";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
+import { useToast } from "../ui/Toast";
+import * as api from "../../lib/tauri";
 
 export function ApiSettings() {
   const { settings, saveSettings, fetchModels } = useSettingsStore();
-  const [key, setKey] = useState('');
+  const [key, setKey] = useState("");
   const [testing, setTesting] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [testResult, setTestResult] = useState<{
+    ok: boolean;
+    msg: string;
+  } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     if (settings) {
-      setKey(settings.openrouter_api_key ?? '');
+      setKey(settings.openrouter_api_key ?? "");
     }
   }, [settings]);
 
@@ -25,7 +28,10 @@ export function ApiSettings() {
     setTestResult(null);
     try {
       const result = await api.testOpenrouterKey(key.trim());
-      setTestResult({ ok: result, msg: result ? 'API key is valid' : 'Invalid API key' });
+      setTestResult({
+        ok: result,
+        msg: result ? "API key is valid" : "Invalid API key",
+      });
     } catch (e) {
       setTestResult({ ok: false, msg: String(e) });
     } finally {
@@ -36,19 +42,19 @@ export function ApiSettings() {
   const handleSave = async () => {
     try {
       await saveSettings({ openrouter_api_key: key.trim() });
-      toast('API key saved', 'success');
+      toast("API key saved", "success");
     } catch (e) {
-      toast(`Save failed: ${e}`, 'error');
+      toast(`Save failed: ${e}`, "error");
     }
   };
 
   const handleFetchModels = async () => {
     setFetching(true);
     try {
-      await fetchModels(settings['openrouter_api_key'] ?? key);
-      toast('Models refreshed', 'success');
+      await fetchModels(settings["openrouter_api_key"] ?? key);
+      toast("Models refreshed", "success");
     } catch (e) {
-      toast(`Failed: ${e}`, 'error');
+      toast(`Failed: ${e}`, "error");
     } finally {
       setFetching(false);
     }
@@ -57,26 +63,41 @@ export function ApiSettings() {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-sm font-semibold text-neutral-300 mb-1">OpenRouter API Key</h3>
+        <h3 className="text-sm font-semibold text-neutral-300 mb-1">
+          OpenRouter API Key
+        </h3>
         <p className="text-xs text-neutral-500 mb-4">
-          Get your key at <span className="text-blue-400">openrouter.ai/keys</span>. Keys start with <code className="bg-neutral-800 px-1 rounded">sk-or-</code>.
+          Get your key at{" "}
+          <span className="text-blue-400">openrouter.ai/keys</span>. Keys start
+          with <code className="bg-neutral-800 px-1 rounded">sk-or-</code>.
         </p>
 
         <Input
           label="API Key"
           placeholder="sk-or-..."
           value={key}
-          onChange={(e) => { setKey(e.target.value); setTestResult(null); }}
+          onChange={(e) => {
+            setKey(e.target.value);
+            setTestResult(null);
+          }}
         />
 
         {testResult && (
-          <div className={`mt-2 rounded-lg px-3 py-2 text-xs ${testResult.ok ? 'bg-green-950 text-green-400' : 'bg-red-950 text-red-400'}`}>
+          <div
+            className={`mt-2 rounded-lg px-3 py-2 text-xs ${testResult.ok ? "bg-green-950 text-green-400" : "bg-red-950 text-red-400"}`}
+          >
             {testResult.msg}
           </div>
         )}
 
         <div className="flex gap-2 mt-3">
-          <Button size="sm" variant="secondary" onClick={handleTest} loading={testing} disabled={!key.trim()}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleTest}
+            loading={testing}
+            disabled={!key.trim()}
+          >
             Test Key
           </Button>
           <Button size="sm" onClick={handleSave} disabled={!key.trim()}>
@@ -88,11 +109,18 @@ export function ApiSettings() {
       <hr className="border-neutral-800" />
 
       <div>
-        <h3 className="text-sm font-semibold text-neutral-300 mb-1">Model List</h3>
+        <h3 className="text-sm font-semibold text-neutral-300 mb-1">
+          Model List
+        </h3>
         <p className="text-xs text-neutral-500 mb-3">
           Fetch the latest available models from OpenRouter to use in tasks.
         </p>
-        <Button size="sm" variant="secondary" onClick={handleFetchModels} loading={fetching}>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={handleFetchModels}
+          loading={fetching}
+        >
           Refresh Model List
         </Button>
       </div>

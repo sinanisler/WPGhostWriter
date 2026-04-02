@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { useTaskStore } from '../../stores/taskStore';
-import { useUsageStore } from '../../stores/usageStore';
-import { TaskCard } from './TaskCard';
-import { StatsOverview } from './StatsOverview';
-import { TopBar } from '../layout/TopBar';
-import { Button } from '../ui/Button';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
+import { useTaskStore } from "../../stores/taskStore";
+import { useUsageStore } from "../../stores/usageStore";
+import { TaskCard } from "./TaskCard";
+import { StatsOverview } from "./StatsOverview";
+import { TopBar } from "../layout/TopBar";
+import { Button } from "../ui/Button";
+import { useNavigate } from "react-router-dom";
 
 export function Dashboard() {
   const { tasks, fetchTasks } = useTaskStore();
@@ -17,7 +17,9 @@ export function Dashboard() {
     fetchSummary();
   }, []);
 
-  const activeTasks = tasks.filter((t) => t.status === 'running' || t.status === 'paused');
+  const activeTasks = tasks.filter(
+    (t) => t.status === "running" || t.status === "paused",
+  );
   const recentTasks = tasks.slice(0, 10);
 
   const postsToday = tasks.reduce((sum, t) => sum + t.posts_completed, 0);
@@ -27,7 +29,7 @@ export function Dashboard() {
       <TopBar
         title="Dashboard"
         action={
-          <Button size="sm" onClick={() => navigate('/tasks')}>
+          <Button size="sm" onClick={() => navigate("/tasks")}>
             + New Task
           </Button>
         }
@@ -60,7 +62,7 @@ export function Dashboard() {
           {recentTasks.length === 0 ? (
             <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 text-center">
               <p className="text-neutral-500 text-sm mb-3">No tasks yet</p>
-              <Button size="sm" onClick={() => navigate('/tasks')}>
+              <Button size="sm" onClick={() => navigate("/tasks")}>
                 Create your first task
               </Button>
             </div>

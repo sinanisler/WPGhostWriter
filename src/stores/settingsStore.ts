@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import type { ModelInfo } from '../types';
-import * as api from '../lib/tauri';
+import { create } from "zustand";
+import type { ModelInfo } from "../types";
+import * as api from "../lib/tauri";
 
 interface SettingsStore {
   settings: Record<string, string>;

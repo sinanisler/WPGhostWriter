@@ -9,9 +9,20 @@ export interface Site {
   is_active: boolean;
 }
 
-export type TaskStatus = 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
-export type TaskStep = 'idle' | 'generating_titles' | 'generating_content' | 'publishing' | 'waiting';
-export type PostStatusWP = 'draft' | 'publish' | 'future' | 'private';
+export type TaskStatus =
+  | "pending"
+  | "running"
+  | "paused"
+  | "completed"
+  | "failed"
+  | "cancelled";
+export type TaskStep =
+  | "idle"
+  | "generating_titles"
+  | "generating_content"
+  | "publishing"
+  | "waiting";
+export type PostStatusWP = "draft" | "publish" | "future" | "private";
 
 export interface Task {
   id: string;
@@ -62,7 +73,12 @@ export interface Post {
   content?: string;
   excerpt?: string;
   wp_post_id?: number;
-  status: 'pending' | 'title_generated' | 'content_generated' | 'published' | 'failed';
+  status:
+    | "pending"
+    | "title_generated"
+    | "content_generated"
+    | "published"
+    | "failed";
   prompt_tokens: number;
   completion_tokens: number;
   estimated_cost: number;
@@ -79,7 +95,7 @@ export interface TaskWithPosts {
 export interface TaskLog {
   id: number;
   task_id: string;
-  level: 'info' | 'warn' | 'error' | 'debug';
+  level: "info" | "warn" | "error" | "debug";
   message: string;
   created_at: string;
 }

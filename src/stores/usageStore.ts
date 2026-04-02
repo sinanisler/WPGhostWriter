@@ -1,8 +1,8 @@
-import { create } from 'zustand';
-import type { UsageSummary, TaskCostRow } from '../types';
-import * as api from '../lib/tauri';
+import { create } from "zustand";
+import type { UsageSummary, TaskCostRow } from "../types";
+import * as api from "../lib/tauri";
 
-type Range = '7d' | '30d' | '90d' | 'all';
+type Range = "7d" | "30d" | "90d" | "all";
 
 interface UsageStore {
   summary: UsageSummary | null;
@@ -17,7 +17,7 @@ interface UsageStore {
 export const useUsageStore = create<UsageStore>((set, get) => ({
   summary: null,
   taskCosts: [],
-  range: '30d',
+  range: "30d",
   loading: false,
 
   setRange: (range) => {
