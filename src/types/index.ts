@@ -49,6 +49,16 @@ export interface Task {
   error_message?: string;
 }
 
+export interface UpdateTaskInput {
+  name: string;
+  prompt: string;
+  system_prompt?: string;
+  post_count: number;
+  interval_minutes: number;
+  model_override?: string;
+  generate_excerpt: boolean;
+}
+
 export interface CreateTaskInput {
   site_id: string;
   name: string;

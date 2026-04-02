@@ -214,6 +214,34 @@ pub fn add_task_tokens(conn: &Connection, id: &str, prompt: u64, completion: u64
     Ok(())
 }
 
+pub fn update_task(
+    conn: &Connection,
+    id: &str,
+    name: &str,
+    prompt: &str,
+    system_prompt: Option<&str>,
+    post_count: u32,
+    interval_minutes: u32,
+    model_override: Option<&str>,
+    generate_excerpt: bool,
+) -> SqlResult<()> {
+    conn.execute(
+        "UPDATE tasks SET name=?2, prompt=?3, system_prompt=?4, post_count=?5, interval_minutes=?6, model_override=?7, generate_excerpt=?8, updated_at=datetime('now') WHERE id=?1",
+        params![id, name, prompt, system_prompt, post_count as i64, interval_minutes as i64, model_override, generate_excerpt as i32],
+    )?;
+    Ok(())
+}
+
+pub fn reset_task_to_pending(conn: &Connection, id: &str) -> SqlResult<()> {
+    conn.execute(
+        "UPDATE tasks SET status='pending', current_step='idle', posts_completed=0, total_prompt_tokens=0, total_completion_tokens=0, total_estimated_cost=0.0, started_at=NULL, completed_at=NULL, error_message=NULL, updated_at=datetime('now') WHERE id=?1",
+        params![id],
+    )?;
+    conn.execute("DELETE FROM task_logs WHERE task_id=?1", params![id])?;
+    conn.execute("DELETE FROM posts WHERE task_id=?1", params![id])?;
+    Ok(())
+}
+
 pub fn delete_task(conn: &Connection, id: &str) -> SqlResult<()> {
     conn.execute("DELETE FROM task_logs WHERE task_id=?1", params![id])?;
     conn.execute("DELETE FROM posts WHERE task_id=?1", params![id])?;

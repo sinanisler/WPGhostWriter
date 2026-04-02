@@ -143,6 +143,17 @@ pub struct CreateTaskInput {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateTaskInput {
+    pub name: String,
+    pub prompt: String,
+    pub system_prompt: Option<String>,
+    pub post_count: u32,
+    pub interval_minutes: u32,
+    pub model_override: Option<String>,
+    pub generate_excerpt: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskWithPosts {
     pub task: Task,
     pub posts: Vec<super::post::Post>,

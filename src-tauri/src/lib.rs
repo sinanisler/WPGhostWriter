@@ -56,6 +56,8 @@ pub fn run() {
             commands::tasks::resume_task,
             commands::tasks::cancel_task,
             commands::tasks::delete_task,
+            commands::tasks::update_task,
+            commands::tasks::restart_task,
             commands::tasks::get_task_logs,
             // Usage commands
             commands::usage::get_usage_summary,

@@ -1,5 +1,5 @@
 use crate::db::queries;
-use crate::models::task::{CreateTaskInput, Task, TaskLog, TaskStatus, TaskStep, TaskWithPosts};
+use crate::models::task::{CreateTaskInput, Task, TaskLog, TaskStatus, TaskStep, TaskWithPosts, UpdateTaskInput};
 use crate::AppState;
 use tauri::{AppHandle, State};
 use uuid::Uuid;
@@ -86,6 +86,42 @@ pub async fn delete_task(state: State<'_, AppState>, id: String) -> Result<(), S
     state.engine.remove_task(&id);
     let conn = state.db.lock().map_err(|e| e.to_string())?;
     queries::delete_task(&conn, &id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn update_task(
+    state: State<'_, AppState>,
+    id: String,
+    input: UpdateTaskInput,
+) -> Result<(), String> {
+    let conn = state.db.lock().map_err(|e| e.to_string())?;
+    queries::update_task(
+        &conn,
+        &id,
+        &input.name,
+        &input.prompt,
+        input.system_prompt.as_deref(),
+        input.post_count,
+        input.interval_minutes,
+        input.model_override.as_deref(),
+        input.generate_excerpt,
+    )
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn restart_task(
+    state: State<'_, AppState>,
+    app_handle: AppHandle,
+    id: String,
+) -> Result<(), String> {
+    let _ = state.engine.cancel_task(&id);
+    state.engine.remove_task(&id);
+    {
+        let conn = state.db.lock().map_err(|e| e.to_string())?;
+        queries::reset_task_to_pending(&conn, &id).map_err(|e| e.to_string())?;
+    }
+    state.engine.start_task(id, app_handle)
 }
 
 #[tauri::command]

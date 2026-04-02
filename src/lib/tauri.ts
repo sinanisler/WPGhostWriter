@@ -3,6 +3,7 @@ import type {
   Site,
   Task,
   CreateTaskInput,
+  UpdateTaskInput,
   TaskWithPosts,
   TaskLog,
   ModelInfo,
@@ -92,6 +93,11 @@ export const resumeTask = (id: string) => invoke<void>("resume_task", { id });
 export const cancelTask = (id: string) => invoke<void>("cancel_task", { id });
 
 export const deleteTask = (id: string) => invoke<void>("delete_task", { id });
+
+export const updateTask = (id: string, input: UpdateTaskInput) =>
+  invoke<void>("update_task", { id, input });
+
+export const restartTask = (id: string) => invoke<void>("restart_task", { id });
 
 export const getTaskLogs = (taskId: string, limit?: number) =>
   invoke<TaskLog[]>("get_task_logs", { taskId, limit });
