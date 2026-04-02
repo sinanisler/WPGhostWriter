@@ -54,6 +54,17 @@ body,
   background: #444;
 }
 
+/* Enforce minimum font size of 16px / 1rem across all text */
+* {
+  min-font-size: 1rem;
+}
+
+.text-xs,
+.text-sm {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
 /* Toast Container */
 .toast-container {
   position: fixed;

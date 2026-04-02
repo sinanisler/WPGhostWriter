@@ -203,227 +203,252 @@ export function TaskList() {
   });
 
   return (
-    <div className="flex flex-col h-full">
-      <TopBar
-        title="Tasks"
-        action={
-          <Button size="sm" onClick={() => setShowCreator(true)}>
-            + New Task
-          </Button>
-        }
-      />
+    <div className="flex h-full overflow-hidden">
+      {/* Left: Task list panel */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <TopBar
+          title="Tasks"
+          action={
+            <Button size="sm" onClick={() => setShowCreator(true)}>
+              + New Task
+            </Button>
+          }
+        />
 
-      {/* Bulk action bar */}
-      {checkedIds.size > 0 && (
-        <div className="flex items-center gap-3 px-6 py-2 bg-neutral-900 border-b border-neutral-800">
-          <span className="text-sm text-neutral-400">
-            {checkedIds.size} selected
-          </span>
-          <div className="flex gap-2 ml-auto">
-            {anyPendingSelected && (
+        {/* Bulk action bar */}
+        {checkedIds.size > 0 && (
+          <div className="flex items-center gap-3 px-6 py-2 bg-neutral-900 border-b border-neutral-800">
+            <span className="text-neutral-400">{checkedIds.size} selected</span>
+            <div className="flex gap-2 ml-auto">
+              {anyPendingSelected && (
+                <Button size="sm" onClick={bulkStart} loading={bulkLoading}>
+                  Start Selected
+                </Button>
+              )}
+              {anyRunningSelected && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={bulkCancel}
+                  loading={bulkLoading}
+                >
+                  Cancel Selected
+                </Button>
+              )}
               <Button
                 size="sm"
-                onClick={bulkStart}
+                variant="danger"
+                onClick={bulkDelete}
                 loading={bulkLoading}
               >
-                Start Selected
+                Delete Selected
               </Button>
-            )}
-            {anyRunningSelected && (
               <Button
                 size="sm"
-                variant="secondary"
-                onClick={bulkCancel}
-                loading={bulkLoading}
+                variant="ghost"
+                onClick={() => setCheckedIds(new Set())}
               >
-                Cancel Selected
+                Clear
               </Button>
-            )}
-            <Button
-              size="sm"
-              variant="danger"
-              onClick={bulkDelete}
-              loading={bulkLoading}
-            >
-              Delete Selected
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setCheckedIds(new Set())}
-            >
-              Clear
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <div className="flex-1 p-6 overflow-y-auto">
-        {tasks.length === 0 ? (
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-12 text-center">
-            <p className="text-neutral-500 mb-4">
-              No tasks yet. Create your first content automation task.
-            </p>
-            <Button onClick={() => setShowCreator(true)}>Create Task</Button>
-          </div>
-        ) : (
-          <>
-            {/* Select-all row */}
-            <div className="flex items-center gap-3 mb-3 px-1">
-              <input
-                type="checkbox"
-                className="accent-blue-500 w-4 h-4 cursor-pointer"
-                checked={checkedIds.size === tasks.length && tasks.length > 0}
-                onChange={toggleAll}
-              />
-              <span className="text-xs text-neutral-600">Select all</span>
             </div>
+          </div>
+        )}
 
-            <div className="space-y-3">
-              {tasks.map((task) => {
-                const progress =
-                  task.post_count > 0
-                    ? (task.posts_completed / task.post_count) * 100
-                    : 0;
-                const isChecked = checkedIds.has(task.id);
-                return (
-                  <div
-                    key={task.id}
-                    className={`bg-neutral-900 border rounded-xl p-4 transition-colors ${
-                      isChecked
-                        ? "border-blue-600"
-                        : "border-neutral-800 hover:border-neutral-700"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      {/* Checkbox */}
-                      <div className="pt-0.5">
-                        <input
-                          type="checkbox"
-                          className="accent-blue-500 w-4 h-4 cursor-pointer"
-                          checked={isChecked}
-                          onChange={() => toggleCheck(task.id)}
-                        />
-                      </div>
+        <div className="flex-1 p-6 overflow-y-auto">
+          {tasks.length === 0 ? (
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-12 text-center">
+              <p className="text-neutral-500 mb-4">
+                No tasks yet. Create your first content automation task.
+              </p>
+              <Button onClick={() => setShowCreator(true)}>Create Task</Button>
+            </div>
+          ) : (
+            <>
+              {/* Select-all row */}
+              <div className="flex items-center gap-3 mb-3 px-1">
+                <input
+                  type="checkbox"
+                  className="accent-blue-500 w-4 h-4 cursor-pointer"
+                  checked={checkedIds.size === tasks.length && tasks.length > 0}
+                  onChange={toggleAll}
+                />
+                <span className="text-neutral-600">Select all</span>
+              </div>
 
-                      {/* Task info */}
-                      <div
-                        className="flex-1 min-w-0 cursor-pointer"
-                        onClick={() => setSelectedId(task.id)}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-sm font-medium text-neutral-100 truncate">
-                            {task.name}
-                          </h3>
-                          {statusBadge(task.status)}
+              <div className="space-y-3">
+                {tasks.map((task) => {
+                  const progress =
+                    task.post_count > 0
+                      ? (task.posts_completed / task.post_count) * 100
+                      : 0;
+                  const isChecked = checkedIds.has(task.id);
+                  const isSelected = selectedId === task.id;
+                  return (
+                    <div
+                      key={task.id}
+                      className={`bg-neutral-900 border rounded-xl p-4 transition-colors ${
+                        isSelected
+                          ? "border-blue-500"
+                          : isChecked
+                            ? "border-blue-600"
+                            : "border-neutral-800 hover:border-neutral-700"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Checkbox */}
+                        <div className="pt-0.5">
+                          <input
+                            type="checkbox"
+                            className="accent-blue-500 w-4 h-4 cursor-pointer"
+                            checked={isChecked}
+                            onChange={() => toggleCheck(task.id)}
+                          />
                         </div>
-                        <p className="text-xs text-neutral-500 truncate">
-                          {task.prompt}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-neutral-600">
-                          <span>
-                            {task.post_count} posts · {task.posts_completed}{" "}
-                            done
-                          </span>
-                          <span>{stepLabel(task.current_step)}</span>
-                          <span className="text-blue-400">
-                            {formatCost(task.total_estimated_cost)}
-                          </span>
-                        </div>
-                      </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                        {task.status === "pending" && task.posts_completed === 0 && (
+                        {/* Task info */}
+                        <div
+                          className="flex-1 min-w-0 cursor-pointer"
+                          onClick={() =>
+                            setSelectedId(isSelected ? null : task.id)
+                          }
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-medium text-neutral-100 truncate">
+                              {task.name}
+                            </h3>
+                            {statusBadge(task.status)}
+                          </div>
+                          <p className="text-neutral-500">{task.prompt}</p>
+                          <div className="flex items-center gap-4 mt-2 text-neutral-600">
+                            <span>
+                              {task.post_count} posts · {task.posts_completed}{" "}
+                              done
+                            </span>
+                            <span>{stepLabel(task.current_step)}</span>
+                            <span className="text-blue-400">
+                              {formatCost(task.total_estimated_cost)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                          {task.status === "pending" &&
+                            task.posts_completed === 0 && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleStart(task.id)}
+                              >
+                                Start
+                              </Button>
+                            )}
+                          {task.status === "pending" &&
+                            task.posts_completed > 0 && (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => handleRestart(task.id)}
+                              >
+                                Restart
+                              </Button>
+                            )}
+                          {task.status === "running" && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handlePause(task.id)}
+                            >
+                              Pause
+                            </Button>
+                          )}
+                          {task.status === "paused" && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleResume(task.id)}
+                            >
+                              Resume
+                            </Button>
+                          )}
+                          {(task.status === "running" ||
+                            task.status === "paused") && (
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              onClick={() => handleCancel(task.id)}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                          {(task.status === "completed" ||
+                            task.status === "failed" ||
+                            task.status === "cancelled") && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleRestart(task.id)}
+                            >
+                              Restart
+                            </Button>
+                          )}
                           <Button
                             size="sm"
-                            onClick={() => handleStart(task.id)}
+                            variant="ghost"
+                            onClick={() => setEditingTask(task)}
                           >
-                            Start
+                            Edit
                           </Button>
-                        )}
-                        {task.status === "pending" && task.posts_completed > 0 && (
                           <Button
                             size="sm"
-                            variant="secondary"
-                            onClick={() => handleRestart(task.id)}
+                            variant={isSelected ? "secondary" : "ghost"}
+                            onClick={() =>
+                              setSelectedId(isSelected ? null : task.id)
+                            }
                           >
-                            Restart
+                            {isSelected ? "Close" : "View"}
                           </Button>
-                        )}
-                        {task.status === "running" && (
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handlePause(task.id)}
-                          >
-                            Pause
-                          </Button>
-                        )}
-                        {task.status === "paused" && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleResume(task.id)}
-                          >
-                            Resume
-                          </Button>
-                        )}
-                        {(task.status === "running" ||
-                          task.status === "paused") && (
                           <Button
                             size="sm"
                             variant="danger"
-                            onClick={() => handleCancel(task.id)}
+                            onClick={() => handleDelete(task.id)}
                           >
-                            Cancel
+                            Delete
                           </Button>
-                        )}
-                        {(task.status === "completed" ||
-                          task.status === "failed" ||
-                          task.status === "cancelled") && (
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handleRestart(task.id)}
-                          >
-                            Restart
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setEditingTask(task)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setSelectedId(task.id)}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => handleDelete(task.id)}
-                        >
-                          Delete
-                        </Button>
+                        </div>
                       </div>
-                    </div>
 
-                    {(task.status === "running" ||
-                      task.status === "paused") && (
-                      <ProgressBar value={progress} className="mt-3" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
+                      {(task.status === "running" ||
+                        task.status === "paused") && (
+                        <ProgressBar value={progress} className="mt-3" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Right: Task Detail Sidebar */}
+      {selectedId && (
+        <div className="w-[770px] shrink-0 border-l border-neutral-800 flex flex-col overflow-hidden bg-neutral-950">
+          {/* Sidebar header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800 shrink-0">
+            <h2 className="font-semibold text-neutral-100">Task Details</h2>
+            <button
+              onClick={() => setSelectedId(null)}
+              className="text-neutral-500 hover:text-neutral-200 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-800"
+              aria-label="Close sidebar"
+            >
+              ✕
+            </button>
+          </div>
+          {/* Sidebar scrollable content */}
+          <div className="flex-1 overflow-y-auto p-5">
+            <TaskDetail taskId={selectedId} />
+          </div>
+        </div>
+      )}
 
       {/* Task Creator Modal */}
       <Modal
@@ -460,16 +485,6 @@ export function TaskList() {
             onCancel={() => setEditingTask(null)}
           />
         )}
-      </Modal>
-
-      {/* Task Detail Modal */}
-      <Modal
-        open={!!selectedId}
-        onClose={() => setSelectedId(null)}
-        title="Task Details"
-        maxWidth="max-w-4xl"
-      >
-        {selectedId && <TaskDetail taskId={selectedId} />}
       </Modal>
     </div>
   );
