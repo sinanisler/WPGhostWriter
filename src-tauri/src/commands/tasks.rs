@@ -18,7 +18,7 @@ pub async fn create_task(
         post_type: input.post_type,
         post_status: crate::models::task::PostStatusWP::from_str(&input.post_status),
         post_count: input.post_count,
-        interval_minutes: input.interval_minutes,
+        interval_seconds: input.interval_seconds,
         model_override: input.model_override,
         generate_excerpt: input.generate_excerpt,
         category_ids: input.category_ids,
@@ -102,7 +102,7 @@ pub async fn update_task(
         &input.prompt,
         input.system_prompt.as_deref(),
         input.post_count,
-        input.interval_minutes,
+        input.interval_seconds,
         input.model_override.as_deref(),
         input.generate_excerpt,
     )

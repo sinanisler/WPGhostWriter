@@ -33,7 +33,7 @@ export interface Task {
   post_type: string;
   post_status: PostStatusWP;
   post_count: number;
-  interval_minutes: number;
+  interval_seconds: number;
   model_override?: string;
   generate_excerpt: boolean;
   category_ids: number[];
@@ -54,7 +54,7 @@ export interface UpdateTaskInput {
   prompt: string;
   system_prompt?: string;
   post_count: number;
-  interval_minutes: number;
+  interval_seconds: number;
   model_override?: string;
   generate_excerpt: boolean;
 }
@@ -67,7 +67,7 @@ export interface CreateTaskInput {
   post_type: string;
   post_status: string;
   post_count: number;
-  interval_minutes: number;
+  interval_seconds: number;
   model_override?: string;
   generate_excerpt: boolean;
   category_ids: number[];
@@ -178,6 +178,9 @@ export interface TaskProgressPayload {
   current_post_title?: string;
   cost_so_far: number;
   log_message?: string;
+  debug_api_key_set?: boolean;
+  debug_model?: string;
+  debug_site_url?: string;
 }
 
 export interface AppSettings {

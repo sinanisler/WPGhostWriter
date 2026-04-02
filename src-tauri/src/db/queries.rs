@@ -105,13 +105,13 @@ pub fn get_setting(conn: &Connection, key: &str) -> SqlResult<Option<String>> {
 pub fn insert_task(conn: &Connection, task: &Task) -> SqlResult<()> {
     conn.execute(
         "INSERT INTO tasks (id, site_id, name, prompt, system_prompt, post_type, post_status, post_count,
-         interval_minutes, model_override, generate_excerpt, category_ids, tag_ids, status, current_step,
+         interval_seconds, model_override, generate_excerpt, category_ids, tag_ids, status, current_step,
          posts_completed, total_prompt_tokens, total_completion_tokens, total_estimated_cost, created_at, updated_at)
          VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,0,0,0,0.0,datetime('now'),datetime('now'))",
         params![
             task.id, task.site_id, task.name, task.prompt, task.system_prompt,
             task.post_type, task.post_status_str(), task.post_count,
-            task.interval_minutes, task.model_override,
+            task.interval_seconds, task.model_override,
             task.generate_excerpt as i32,
             serde_json::to_string(&task.category_ids).unwrap_or_default(),
             serde_json::to_string(&task.tag_ids).unwrap_or_default(),
@@ -124,7 +124,7 @@ pub fn insert_task(conn: &Connection, task: &Task) -> SqlResult<()> {
 pub fn list_tasks(conn: &Connection) -> SqlResult<Vec<Task>> {
     let mut stmt = conn.prepare(
         "SELECT id, site_id, name, prompt, system_prompt, post_type, post_status, post_count,
-         interval_minutes, model_override, generate_excerpt, category_ids, tag_ids, status, current_step,
+         interval_seconds, model_override, generate_excerpt, category_ids, tag_ids, status, current_step,
          posts_completed, total_prompt_tokens, total_completion_tokens, total_estimated_cost,
          started_at, completed_at, error_message
          FROM tasks ORDER BY created_at DESC"
@@ -136,7 +136,7 @@ pub fn list_tasks(conn: &Connection) -> SqlResult<Vec<Task>> {
 pub fn get_task(conn: &Connection, id: &str) -> SqlResult<Option<Task>> {
     let mut stmt = conn.prepare(
         "SELECT id, site_id, name, prompt, system_prompt, post_type, post_status, post_count,
-         interval_minutes, model_override, generate_excerpt, category_ids, tag_ids, status, current_step,
+         interval_seconds, model_override, generate_excerpt, category_ids, tag_ids, status, current_step,
          posts_completed, total_prompt_tokens, total_completion_tokens, total_estimated_cost,
          started_at, completed_at, error_message
          FROM tasks WHERE id=?1"
@@ -157,7 +157,7 @@ fn task_from_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
         post_type: row.get(5)?,
         post_status: crate::models::task::PostStatusWP::from_str(&row.get::<_, String>(6).unwrap_or_default()),
         post_count: row.get::<_, i64>(7)? as u32,
-        interval_minutes: row.get::<_, i64>(8)? as u32,
+        interval_seconds: row.get::<_, i64>(8)? as u32,
         model_override: row.get(9)?,
         generate_excerpt: row.get::<_, i32>(10)? != 0,
         category_ids: serde_json::from_str(&category_ids_str).unwrap_or_default(),
@@ -221,13 +221,13 @@ pub fn update_task(
     prompt: &str,
     system_prompt: Option<&str>,
     post_count: u32,
-    interval_minutes: u32,
+    interval_seconds: u32,
     model_override: Option<&str>,
     generate_excerpt: bool,
 ) -> SqlResult<()> {
     conn.execute(
-        "UPDATE tasks SET name=?2, prompt=?3, system_prompt=?4, post_count=?5, interval_minutes=?6, model_override=?7, generate_excerpt=?8, updated_at=datetime('now') WHERE id=?1",
-        params![id, name, prompt, system_prompt, post_count as i64, interval_minutes as i64, model_override, generate_excerpt as i32],
+        "UPDATE tasks SET name=?2, prompt=?3, system_prompt=?4, post_count=?5, interval_seconds=?6, model_override=?7, generate_excerpt=?8, updated_at=datetime('now') WHERE id=?1",
+        params![id, name, prompt, system_prompt, post_count as i64, interval_seconds as i64, model_override, generate_excerpt as i32],
     )?;
     Ok(())
 }

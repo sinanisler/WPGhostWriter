@@ -3,7 +3,7 @@ import type { TaskWithPosts, TaskLog } from "../../types";
 import { statusBadge } from "../ui/Badge";
 import { ProgressBar } from "../ui/ProgressBar";
 import { Button } from "../ui/Button";
-import { formatCost, formatDate, stepLabel } from "../../lib/utils";
+import { formatCost, formatDate, formatInterval, stepLabel } from "../../lib/utils";
 import * as api from "../../lib/tauri";
 import { useToast } from "../ui/Toast";
 import { useTaskStore } from "../../stores/taskStore";
@@ -132,13 +132,14 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-5 gap-3">
         {[
           {
             label: "Posts",
             value: `${task.posts_completed}/${task.post_count}`,
           },
           { label: "Step", value: stepLabel(task.current_step) },
+          { label: "Interval", value: formatInterval(task.interval_seconds) },
           { label: "Cost", value: formatCost(task.total_estimated_cost) },
           {
             label: "Tokens",

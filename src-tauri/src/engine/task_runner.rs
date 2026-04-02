@@ -24,6 +24,10 @@ pub struct TaskProgressPayload {
     pub current_post_title: Option<String>,
     pub cost_so_far: f64,
     pub log_message: Option<String>,
+    // Debug fields
+    pub debug_api_key_set: bool,
+    pub debug_model: String,
+    pub debug_site_url: String,
 }
 
 struct TaskHandle {
@@ -171,6 +175,16 @@ async fn run_task(
         .or_else(|| settings.get("default_model").cloned())
         .unwrap_or_else(|| "openai/gpt-4o-mini".to_string());
 
+    // ── DEBUG: log startup config ──────────────────────────────────────────
+    let api_key_set = !api_key.is_empty();
+    let debug_site_url = site.url.clone();
+    let debug_model = model.clone();
+    log::info!("[TASK {}] Starting: model={} api_key_set={} site={} posts={} interval={}s",
+        task_id, model, api_key_set, site.url, task.post_count, task.interval_seconds);
+    if !api_key_set {
+        log::error!("[TASK {}] ERROR: OpenRouter API key is empty! Task will fail.", task_id);
+    }
+
     let temperature: f64 = settings
         .get("default_temperature")
         .and_then(|v| v.parse().ok())
@@ -199,19 +213,23 @@ async fn run_task(
         .unwrap_or_else(|| crate::models::settings::BUILT_IN_DEFAULT_SYSTEM_PROMPT.to_string());
 
     let emit_progress = |step: &str, completed: u32, title: Option<String>, cost: f64, log: Option<String>| {
-        let _ = app_handle.emit(
-            "task-progress",
-            TaskProgressPayload {
-                task_id: task_id.clone(),
-                status: "running".to_string(),
-                current_step: step.to_string(),
-                posts_completed: completed,
-                total_posts: task.post_count,
-                current_post_title: title,
-                cost_so_far: cost,
-                log_message: log,
-            },
-        );
+        let payload = TaskProgressPayload {
+            task_id: task_id.clone(),
+            status: "running".to_string(),
+            current_step: step.to_string(),
+            posts_completed: completed,
+            total_posts: task.post_count,
+            current_post_title: title,
+            cost_so_far: cost,
+            log_message: log,
+            debug_api_key_set: !api_key.is_empty(),
+            debug_model: model.clone(),
+            debug_site_url: debug_site_url.clone(),
+        };
+        log::debug!("[TASK {}] emit task-progress: step={} completed={}/{}", task_id, step, completed, task.post_count);
+        if let Err(e) = app_handle.emit("task-progress", &payload) {
+            log::warn!("[TASK {}] Failed to emit progress event: {}", task_id, e);
+        }
     };
 
     let log_db = |level: &str, message: &str| {
@@ -250,6 +268,16 @@ async fn run_task(
     }
     emit_progress("generating_titles", 0, None, 0.0, Some("Generating titles...".to_string()));
     log_db("info", "Starting title generation");
+    log::info!("[TASK {}] Calling OpenRouter: model={} api_key_len={}", task_id, model, api_key.len());
+
+    if api_key.is_empty() {
+        let err = "OpenRouter API key is not configured. Go to Settings > API and save your key.".to_string();
+        log_db("error", &err);
+        let conn = db.lock().unwrap();
+        let _ = queries::update_task_completed(&conn, &task_id, "failed", Some(&err));
+        emit_progress("idle", 0, None, 0.0, Some(format!("FAILED: {}", err)));
+        return;
+    }
 
     let title_prompt = format!(
         "Generate exactly {} unique, SEO-friendly article titles about the following topic. \
@@ -264,8 +292,12 @@ async fn run_task(
         )
         .await
     {
-        Ok(r) => r,
+        Ok(r) => {
+            log::info!("[TASK {}] Title response OK: tokens={}", task_id, r.usage.total_tokens);
+            r
+        }
         Err(e) => {
+            log::error!("[TASK {}] OpenRouter error: {}", task_id, e);
             log_db("error", &format!("Title generation failed: {}", e));
             let conn = db.lock().unwrap();
             let _ = queries::update_task_completed(&conn, &task_id, "failed", Some(&e));
@@ -315,7 +347,7 @@ async fn run_task(
     for (i, title) in titles.iter().enumerate().take(task.post_count as usize) {
         let post_id = Uuid::new_v4().to_string();
         let scheduled_at = {
-            let offset = chrono::Duration::minutes((i as i64) * (task.interval_minutes as i64));
+            let offset = chrono::Duration::seconds((i as i64) * (task.interval_seconds as i64));
             (base_time + offset).format("%Y-%m-%dT%H:%M:%S").to_string()
         };
 
@@ -495,7 +527,7 @@ async fn run_task(
         };
 
         let scheduled_at = {
-            let offset = chrono::Duration::minutes((idx as i64) * (task.interval_minutes as i64));
+            let offset = chrono::Duration::seconds((idx as i64) * (task.interval_seconds as i64));
             (base_time + offset).format("%Y-%m-%dT%H:%M:%S").to_string()
         };
 
@@ -537,10 +569,11 @@ async fn run_task(
                 let conn = db.lock().unwrap();
                 let _ = queries::update_task_status(&conn, &task_id, &TaskStatus::Running, &TaskStep::Waiting);
             }
-            emit_progress("waiting", (idx + 1) as u32, None, total_cost, Some(format!("Waiting {} minutes before next post...", task.interval_minutes)));
-            log_db("info", &format!("Waiting {} minutes before next post", task.interval_minutes));
+            emit_progress("waiting", (idx + 1) as u32, None, total_cost, Some(format!("Waiting {} seconds before next post...", task.interval_seconds)));
+            log_db("info", &format!("Waiting {} seconds before next post", task.interval_seconds));
+            log::info!("[TASK {}] Waiting {} seconds before post #{}", task_id, task.interval_seconds, idx + 2);
 
-            let wait_secs = (task.interval_minutes as u64) * 60;
+            let wait_secs = task.interval_seconds as u64;
             let mut elapsed = 0u64;
             while elapsed < wait_secs {
                 if cancel_token.is_cancelled() {

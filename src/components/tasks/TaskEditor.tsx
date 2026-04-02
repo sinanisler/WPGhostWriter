@@ -4,6 +4,7 @@ import type { Task, UpdateTaskInput } from "../../types";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import * as api from "../../lib/tauri";
+import { formatInterval } from "../../lib/utils";
 
 interface TaskEditorProps {
   task: Task;
@@ -19,7 +20,7 @@ export function TaskEditor({ task, onSaved, onCancel }: TaskEditorProps) {
     prompt: task.prompt,
     system_prompt: task.system_prompt,
     post_count: task.post_count,
-    interval_minutes: task.interval_minutes,
+    interval_seconds: task.interval_seconds,
     model_override: task.model_override,
     generate_excerpt: task.generate_excerpt,
   });
@@ -45,8 +46,8 @@ export function TaskEditor({ task, onSaved, onCancel }: TaskEditorProps) {
       setError("Post count must be 1–100");
       return;
     }
-    if (form.interval_minutes < 1) {
-      setError("Interval must be at least 1 minute");
+    if (form.interval_seconds < 1) {
+      setError("Interval must be at least 1 second");
       return;
     }
 
@@ -117,17 +118,18 @@ export function TaskEditor({ task, onSaved, onCancel }: TaskEditorProps) {
 
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium text-neutral-400">
-            Interval (minutes)
+            Interval Between Posts (seconds)
           </label>
           <input
             type="number"
             min={1}
             className="bg-neutral-900 border border-neutral-700 rounded-md px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            value={form.interval_minutes}
+            value={form.interval_seconds}
             onChange={(e) =>
-              set("interval_minutes", parseInt(e.target.value) || 60)
+              set("interval_seconds", parseInt(e.target.value) || 3600)
             }
           />
+          <p className="text-xs text-neutral-600">= {formatInterval(form.interval_seconds)}</p>
         </div>
       </div>
 

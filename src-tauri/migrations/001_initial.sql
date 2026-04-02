@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     post_type                TEXT NOT NULL DEFAULT 'post',
     post_status              TEXT NOT NULL DEFAULT 'draft',
     post_count               INTEGER NOT NULL DEFAULT 5,
-    interval_minutes         INTEGER NOT NULL DEFAULT 60,
+    interval_seconds         INTEGER NOT NULL DEFAULT 3600,
     model_override           TEXT,
     generate_excerpt         INTEGER NOT NULL DEFAULT 0,
     category_ids             TEXT,
