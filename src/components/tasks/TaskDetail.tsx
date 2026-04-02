@@ -3,7 +3,12 @@ import type { TaskWithPosts, TaskLog } from "../../types";
 import { statusBadge } from "../ui/Badge";
 import { ProgressBar } from "../ui/ProgressBar";
 import { Button } from "../ui/Button";
-import { formatCost, formatDate, formatInterval, stepLabel } from "../../lib/utils";
+import {
+  formatCost,
+  formatDate,
+  formatInterval,
+  stepLabel,
+} from "../../lib/utils";
 import * as api from "../../lib/tauri";
 import { useToast } from "../ui/Toast";
 import { useTaskStore } from "../../stores/taskStore";

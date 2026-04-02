@@ -129,7 +129,9 @@ export function TaskEditor({ task, onSaved, onCancel }: TaskEditorProps) {
               set("interval_seconds", parseInt(e.target.value) || 3600)
             }
           />
-          <p className="text-xs text-neutral-600">= {formatInterval(form.interval_seconds)}</p>
+          <p className="text-xs text-neutral-600">
+            = {formatInterval(form.interval_seconds)}
+          </p>
         </div>
       </div>
 

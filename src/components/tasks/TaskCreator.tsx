@@ -105,11 +105,12 @@ export function TaskCreator({ onCreated, onCancel }: TaskCreatorProps) {
     setSubmitting(true);
     setError(null);
     try {
-      await api.createTask({
+      const task = await api.createTask({
         ...form,
         system_prompt: form.system_prompt?.trim() || undefined,
         model_override: form.model_override?.trim() || undefined,
       });
+      await api.startTask(task.id);
       onCreated();
     } catch (e) {
       setError(String(e));
@@ -231,7 +232,9 @@ export function TaskCreator({ onCreated, onCancel }: TaskCreatorProps) {
               set("interval_seconds", parseInt(e.target.value) || 3600)
             }
           />
-          <p className="text-xs text-neutral-600">= {formatInterval(form.interval_seconds)}</p>
+          <p className="text-xs text-neutral-600">
+            = {formatInterval(form.interval_seconds)}
+          </p>
         </div>
       </div>
 
