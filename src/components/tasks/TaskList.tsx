@@ -334,12 +334,21 @@ export function TaskList() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                        {task.status === "pending" && (
+                        {task.status === "pending" && task.posts_completed === 0 && (
                           <Button
                             size="sm"
                             onClick={() => handleStart(task.id)}
                           >
                             Start
+                          </Button>
+                        )}
+                        {task.status === "pending" && task.posts_completed > 0 && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleRestart(task.id)}
+                          >
+                            Restart
                           </Button>
                         )}
                         {task.status === "running" && (

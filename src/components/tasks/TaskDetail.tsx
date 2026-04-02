@@ -53,6 +53,7 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
   const handleAction = async (action: string) => {
     try {
       if (action === "start") await api.startTask(taskId);
+      else if (action === "restart") await api.restartTask(taskId);
       else if (action === "pause") await api.pauseTask(taskId);
       else if (action === "resume") await api.resumeTask(taskId);
       else if (action === "cancel") await api.cancelTask(taskId);
@@ -105,9 +106,14 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
           <p className="text-xs text-neutral-500 max-w-md">{task.prompt}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {task.status === "pending" && (
+          {task.status === "pending" && task.posts_completed === 0 && (
             <Button size="sm" onClick={() => handleAction("start")}>
               Start
+            </Button>
+          )}
+          {task.status === "pending" && task.posts_completed > 0 && (
+            <Button size="sm" variant="secondary" onClick={() => handleAction("restart")}>
+              Restart
             </Button>
           )}
           {task.status === "running" && (
@@ -131,6 +137,11 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
               onClick={() => handleAction("cancel")}
             >
               Cancel
+            </Button>
+          )}
+          {(task.status === "completed" || task.status === "failed" || task.status === "cancelled") && (
+            <Button size="sm" variant="secondary" onClick={() => handleAction("restart")}>
+              Restart
             </Button>
           )}
         </div>

@@ -232,6 +232,17 @@ pub fn update_task(
     Ok(())
 }
 
+/// On app startup, any task that was `running` or `paused` when the app last
+/// closed has no engine thread backing it.  Reset those tasks to `pending` so
+/// the user can start them again (their posts/logs are preserved).
+pub fn reset_interrupted_tasks(conn: &Connection) -> SqlResult<usize> {
+    conn.execute(
+        "UPDATE tasks SET status='pending', current_step='idle', updated_at=datetime('now') \
+         WHERE status IN ('running', 'paused')",
+        [],
+    )
+}
+
 pub fn reset_task_to_pending(conn: &Connection, id: &str) -> SqlResult<()> {
     conn.execute(
         "UPDATE tasks SET status='pending', current_step='idle', posts_completed=0, total_prompt_tokens=0, total_completion_tokens=0, total_estimated_cost=0.0, started_at=NULL, completed_at=NULL, error_message=NULL, updated_at=datetime('now') WHERE id=?1",

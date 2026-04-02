@@ -26,6 +26,16 @@ pub fn run() {
                 .expect("Failed to get app data directory");
 
             let db = db::open(&app_data_dir).expect("Failed to open database");
+
+            // Reset any tasks left in running/paused state from a previous session
+            {
+                let conn = db.lock().unwrap();
+                match db::queries::reset_interrupted_tasks(&conn) {
+                    Ok(n) if n > 0 => log::info!("Reset {} interrupted task(s) to pending on startup", n),
+                    _ => {}
+                }
+            }
+
             let engine = TaskEngine::new(db.clone());
 
             app.manage(AppState { db, engine });
