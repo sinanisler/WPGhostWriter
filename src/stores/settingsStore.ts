@@ -26,9 +26,9 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
     }
   },
 
-  saveSettings: async (settings) => {
-    await api.saveSettings(settings);
-    set({ settings });
+  saveSettings: async (newSettings) => {
+    await api.saveSettings(newSettings);
+    set((state) => ({ settings: { ...state.settings, ...newSettings } }));
   },
 
   fetchModels: async (apiKey) => {

@@ -21,6 +21,7 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
   const [data, setData] = useState<TaskWithPosts | null>(null);
   const [logs, setLogs] = useState<TaskLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [countdown, setCountdown] = useState<string | null>(null);
   const { toast } = useToast();
   const { fetchTasks } = useTaskStore();
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -49,6 +50,45 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [logs]);
+
+  // Countdown timer when task is in "waiting" step
+  useEffect(() => {
+    if (!data) return;
+    const { task, posts } = data;
+    if (task.status !== "running" || task.current_step !== "waiting") {
+      setCountdown(null);
+      return;
+    }
+    const lastPublished = [...posts]
+      .filter((p) => p.status === "published" && p.published_at)
+      .sort((a, b) => b.sequence_number - a.sequence_number)[0];
+    if (!lastPublished?.published_at) {
+      setCountdown(null);
+      return;
+    }
+    const nextRunAt =
+      new Date(lastPublished.published_at).getTime() +
+      task.interval_seconds * 1000;
+
+    const tick = () => {
+      const remaining = Math.max(0, nextRunAt - Date.now());
+      if (remaining === 0) {
+        setCountdown("any moment...");
+        return;
+      }
+      const totalSecs = Math.ceil(remaining / 1000);
+      const h = Math.floor(totalSecs / 3600);
+      const m = Math.floor((totalSecs % 3600) / 60);
+      const s = totalSecs % 60;
+      if (h > 0) setCountdown(`${h}h ${m}m ${s}s`);
+      else if (m > 0) setCountdown(`${m}m ${s}s`);
+      else setCountdown(`${s}s`);
+    };
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [data]);
 
   const handleAction = async (action: string) => {
     try {
@@ -155,7 +195,10 @@ export function TaskDetail({ taskId }: TaskDetailProps) {
             value: `${task.posts_completed}/${task.post_count}`,
           },
           { label: "Step", value: stepLabel(task.current_step) },
-          { label: "Interval", value: formatInterval(task.interval_seconds) },
+          {
+            label: countdown ? "Next post in" : "Interval",
+            value: countdown ?? formatInterval(task.interval_seconds),
+          },
           { label: "Cost", value: formatCost(task.total_estimated_cost) },
           {
             label: "Tokens",
