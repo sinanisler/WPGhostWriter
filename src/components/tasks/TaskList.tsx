@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useTaskStore } from "../../stores/taskStore";
 import { useSiteStore } from "../../stores/siteStore";
 import { TopBar } from "../layout/TopBar";
@@ -27,6 +27,37 @@ export function TaskList() {
   // Bulk selection
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
+
+  // Resizable sidebar
+  const [sidebarWidth, setSidebarWidth] = useState(480);
+  const isResizing = useRef(false);
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizing.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isResizing.current) return;
+      // Sidebar is on the right; width = distance from pointer to right edge
+      const newWidth = window.innerWidth - ev.clientX;
+      setSidebarWidth(
+        Math.min(Math.max(newWidth, 320), window.innerWidth * 0.75),
+      );
+    };
+
+    const onMouseUp = () => {
+      isResizing.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }, []);
 
   useEffect(() => {
     fetchTasks();
@@ -431,7 +462,16 @@ export function TaskList() {
 
       {/* Right: Task Detail Sidebar */}
       {selectedId && (
-        <div className="w-[480px] max-w-[50vw] shrink-0 border-l border-neutral-800 flex flex-col overflow-hidden bg-neutral-950">
+        <div
+          className="shrink-0 border-l border-neutral-800 flex flex-col overflow-hidden bg-neutral-950 relative"
+          style={{ width: sidebarWidth }}
+        >
+          {/* Drag handle – left edge */}
+          <div
+            onMouseDown={startResize}
+            className="absolute left-0 top-0 h-full w-1.5 cursor-col-resize z-10 hover:bg-blue-500/40 active:bg-blue-500/60 transition-colors"
+            title="Drag to resize"
+          />
           {/* Sidebar header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800 shrink-0">
             <h2 className="font-semibold text-neutral-100">Task Details</h2>
