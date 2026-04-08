@@ -4,6 +4,7 @@ import { Button } from "../ui/Button";
 import { Modal } from "../ui/Modal";
 import { SiteConnectionForm } from "./SiteConnectionForm";
 import { useToast } from "../ui/Toast";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import * as api from "../../lib/tauri";
 
 export function SiteManager() {
@@ -72,7 +73,14 @@ export function SiteManager() {
                   User: {site.username}
                 </span>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => openUrl(`${site.url}/wp-admin`)}
+                >
+                  WP Admin
+                </Button>
                 <Button
                   size="sm"
                   variant="secondary"

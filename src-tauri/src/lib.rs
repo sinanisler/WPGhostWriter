@@ -6,7 +6,7 @@ mod services;
 
 use engine::task_runner::TaskEngine;
 use db::Db;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 pub struct AppState {
     pub db: Db,
@@ -27,7 +27,14 @@ pub fn run() {
 
             let db = db::open(&app_data_dir).expect("Failed to open database");
 
-            // Reset any tasks left in running/paused state from a previous session
+            // Collect IDs of tasks that were running/paused when the app last closed
+            // so the background ticker can restart them automatically.
+            let interrupted_ids: Vec<String> = {
+                let conn = db.lock().unwrap();
+                db::queries::get_interrupted_task_ids(&conn).unwrap_or_default()
+            };
+
+            // Reset those tasks to pending so the ticker can pick them up
             {
                 let conn = db.lock().unwrap();
                 match db::queries::reset_interrupted_tasks(&conn) {
@@ -39,6 +46,36 @@ pub fn run() {
             let engine = TaskEngine::new(db.clone());
 
             app.manage(AppState { db, engine });
+
+            // ── Background Ticker ───────────────────────────────────────────────
+            // Spawns a background async task that:
+            //   1. On startup: auto-restarts any tasks that were interrupted.
+            //   2. Every 30 s: emits an `app-tick` event so the frontend refreshes.
+            let ticker_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                // Brief delay so the window and frontend can finish initialising
+                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+
+                let state = ticker_handle.state::<AppState>();
+
+                // Auto-restart interrupted tasks from the previous session
+                for id in interrupted_ids {
+                    if !state.engine.is_task_active(&id) {
+                        log::info!("[TICKER] Auto-restarting interrupted task {}", id);
+                        if let Err(e) = state.engine.start_task(id, ticker_handle.clone()) {
+                            log::error!("[TICKER] Failed to auto-restart task: {}", e);
+                        }
+                    }
+                }
+
+                // Periodic tick – frontend listens for this to refresh task state
+                loop {
+                    tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+                    let _ = ticker_handle.emit("app-tick", ());
+                    log::debug!("[TICKER] tick emitted");
+                }
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

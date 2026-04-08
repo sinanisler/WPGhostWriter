@@ -232,9 +232,19 @@ pub fn update_task(
     Ok(())
 }
 
+/// Return IDs of tasks that are currently in a running/paused state (i.e.
+/// they were active when the app last closed and have no engine thread now).
+pub fn get_interrupted_task_ids(conn: &Connection) -> SqlResult<Vec<String>> {
+    let mut stmt = conn.prepare(
+        "SELECT id FROM tasks WHERE status IN ('running', 'paused') ORDER BY created_at"
+    )?;
+    let rows = stmt.query_map([], |row| row.get::<_, String>(0))?;
+    rows.collect()
+}
+
 /// On app startup, any task that was `running` or `paused` when the app last
 /// closed has no engine thread backing it.  Reset those tasks to `pending` so
-/// the user can start them again (their posts/logs are preserved).
+/// the ticker can restart them automatically.
 pub fn reset_interrupted_tasks(conn: &Connection) -> SqlResult<usize> {
     conn.execute(
         "UPDATE tasks SET status='pending', current_step='idle', updated_at=datetime('now') \

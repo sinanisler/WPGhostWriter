@@ -128,6 +128,10 @@ impl TaskEngine {
     pub fn remove_task(&self, task_id: &str) {
         self.active_tasks.remove(task_id);
     }
+
+    pub fn is_task_active(&self, task_id: &str) -> bool {
+        self.active_tasks.contains_key(task_id)
+    }
 }
 
 async fn run_task(

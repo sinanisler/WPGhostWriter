@@ -358,7 +358,7 @@ export function TaskList() {
                               variant="secondary"
                               onClick={() => handlePause(task.id)}
                             >
-                              Pause
+                              ⏸ Pause
                             </Button>
                           )}
                           {task.status === "paused" && (
@@ -366,7 +366,7 @@ export function TaskList() {
                               size="sm"
                               onClick={() => handleResume(task.id)}
                             >
-                              Resume
+                              ▶ Resume
                             </Button>
                           )}
                           {(task.status === "running" ||
@@ -431,7 +431,7 @@ export function TaskList() {
 
       {/* Right: Task Detail Sidebar */}
       {selectedId && (
-        <div className="w-[770px] shrink-0 border-l border-neutral-800 flex flex-col overflow-hidden bg-neutral-950">
+        <div className="w-[480px] max-w-[50vw] shrink-0 border-l border-neutral-800 flex flex-col overflow-hidden bg-neutral-950">
           {/* Sidebar header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800 shrink-0">
             <h2 className="font-semibold text-neutral-100">Task Details</h2>
